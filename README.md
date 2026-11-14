@@ -58,10 +58,6 @@ Use short commit messages that say what changed, for example `Add application st
 
 Built for a Georgia Tech case competition.
 
-- Name, role
-- Name, role
-- Name, role
-
 ## Disclaimer
 
 SideQuest is a student project. It is not affiliated with or endorsed by Georgia Tech, and it does not collect data from LinkedIn.

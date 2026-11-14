@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pathfinder · Duo 3-Digit Access Component</title>
+<style>
+body{margin:0;background:#f2f5f8;font-family:Inter,system-ui,sans-serif;color:#003057}
+.preview-app{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center}
+.preview-app>div{max-width:540px;background:white;border:1px solid #dce5ee;border-radius:18px;padding:38px;box-shadow:0 14px 40px #0030570c}
+.preview-app h1{margin:0 0 12px;font-size:28px}
+.preview-app p{line-height:1.7;color:#53697b}
+.preview-app button{padding:12px 18px;border:0;border-radius:10px;background:#003057;color:white;font-weight:700;cursor:pointer}
+</style>
+<style>
+/* Pathfinder competition access simulation. No real credentials or codes are collected. */
+
+/* Three-digit Verified Push walkthrough (browser -> simulated phone). */
+.pf-gt-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:23px;padding-bottom:16px;border-bottom:1px solid #e8edf1}
+.pf-gt-logo{display:block;width:174px;max-width:58%;height:auto;object-fit:contain}
+.pf-gt-logo-fallback{font-size:22px;font-weight:900;letter-spacing:-.045em;color:#003057}
+.pf-gt-caption{font-size:10px;line-height:1.5;color:#7a8795;text-align:right;max-width:132px}
+.pf-verified-code{background:#f5f8fb;border:1px solid #dbe5ed;border-radius:15px;padding:19px 16px;text-align:center;margin-bottom:15px}
+.pf-verified-code small{display:block;font-size:11px;color:#60758a;font-weight:650}
+.pf-verified-code strong{display:block;font-size:53px;letter-spacing:.14em;font-weight:850;line-height:1.35;color:#092f50;font-variant-numeric:tabular-nums}
+.pf-verified-code .pf-countdown{font-size:11px;color:#687b8d;margin-top:5px}
+.pf-verified-code .pf-countdown b{color:#003057}
+.pf-auth-phone .pf-phone-entry{width:100%;border:1px solid #b9cbd9;border-radius:9px;height:44px;text-align:center;letter-spacing:.2em;font:800 23px Inter,system-ui,sans-serif;color:#123a58;background:white;margin:12px 0 3px;outline:none}
+.pf-auth-phone .pf-phone-entry:focus{border-color:#2771ad;box-shadow:0 0 0 3px #d8ebf8}
+.pf-auth-phone .pf-phone-verify{background:#2a76b7;color:#fff;border-color:#2a76b7;padding:11px}
+.pf-auth-phone .pf-phone-error{min-height:13px;font-size:9px;line-height:1.4;color:#a43e2d;margin-top:6px}
+.pf-auth-phone .pf-phone-approval{background:#e6f5ee;border:1px solid #b9dfcc;border-radius:10px;padding:12px 8px;text-align:center;color:#136d47;font-size:12px;font-weight:750;margin-top:13px}
+.pf-auth-hero .pf-phone-caption{font-size:11px;color:#cbdce9;line-height:1.6;text-align:center;margin-top:15px;max-width:280px}
+@media(max-width:780px){.pf-gt-header{margin-bottom:17px}.pf-gt-logo{width:150px}.pf-verified-code strong{font-size:43px}}
+
+.pf-auth{position:fixed;inset:0;z-index:100000;overflow:auto;display:grid;place-items:center;background:radial-gradient(circle at 20% 25%,#174c74 0,transparent 35%),radial-gradient(circle at 92% 90%,#0e5373 0,transparent 30%),#041d32;color:#182b3d;font-family:Inter,system-ui,-apple-system,sans-serif;padding:30px 22px;box-sizing:border-box}
+.pf-auth[hidden],.pf-auth-session[hidden],.pf-auth [hidden]{display:none!important}
+.pf-auth *{box-sizing:border-box}
+.pf-auth-shell{width:min(1060px,100%);position:relative}
+.pf-auth-brand{display:flex;align-items:center;gap:12px;color:white;font-weight:800;letter-spacing:-.03em;font-size:24px;margin-bottom:22px}
+.pf-auth-mark{display:grid;place-items:center;width:44px;height:44px;border-radius:13px;background:#b3a369;color:#002d50;font-family:Georgia,serif;font-size:29px;font-weight:bold;box-shadow:0 6px 24px #0002}
+.pf-auth-mark:after{content:'';position:absolute}
+.pf-auth-pill{margin-left:auto;color:#e7e1c7;border:1px solid #7790a4;border-radius:999px;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#ffffff0a}
+.pf-auth-grid{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);border:1px solid #ffffff2b;border-radius:25px;overflow:hidden;box-shadow:0 32px 110px #0006;background:#ffffff0c}
+.pf-auth-hero{padding:55px 44px 35px;color:#fff;position:relative;min-height:560px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.pf-auth-hero:before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;border:1px solid #ffffff25;left:-170px;bottom:-250px;box-shadow:0 0 0 80px #ffffff06,0 0 0 160px #ffffff05;pointer-events:none}
+.pf-auth-eyebrow{color:#dfcf9c;text-transform:uppercase;letter-spacing:.2em;font-size:11px;font-weight:800;margin-bottom:18px}
+.pf-auth-hero h1{font-family:'Bricolage Grotesque',Inter,system-ui,sans-serif;font-size:clamp(38px,4.3vw,59px);line-height:1.03;letter-spacing:-.055em;margin:0 0 20px;max-width:390px;color:#fff}
+.pf-auth-hero h1 em{font-style:normal;color:#d2bb75}
+.pf-auth-hero p{font-size:15px;line-height:1.75;color:#c3d1df;max-width:360px;margin:0}
+.pf-auth-metrics{display:flex;gap:10px;flex-wrap:wrap;position:relative}
+.pf-auth-metric{background:#ffffff12;border:1px solid #ffffff24;border-radius:12px;padding:12px 14px;min-width:120px;flex:1}
+.pf-auth-metric b{display:block;color:#fff;font-size:15px;margin-bottom:4px}
+.pf-auth-metric small{color:#b9c9d7;font-size:11px}
+.pf-auth-panel{background:#fff;padding:47px 48px 35px;min-height:560px;display:flex;flex-direction:column;justify-content:center}
+.pf-auth-progress{display:flex;gap:8px;margin-bottom:28px}
+.pf-auth-progress i{display:block;height:4px;flex:1;border-radius:4px;background:#e7ebef}
+.pf-auth-progress i.on{background:#b3a369}
+.pf-auth-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;color:#718195;margin:0 0 11px}
+.pf-auth-panel h2{font-family:'Bricolage Grotesque',Inter,system-ui,sans-serif;font-size:31px;line-height:1.1;letter-spacing:-.04em;color:#092d4a;margin:0 0 12px}
+.pf-auth-panel p{color:#5c6b7b;font-size:13px;line-height:1.7;margin:0 0 22px}
+.pf-auth-primary{background:#003057;border:1px solid #003057;color:#fff;border-radius:11px;min-height:49px;width:100%;padding:12px 16px;font:700 13px Inter,system-ui,sans-serif;cursor:pointer;transition:transform .15s,background .15s}
+.pf-auth-primary:hover{background:#114c76;transform:translateY(-1px)}
+.pf-auth-primary:focus-visible,.pf-auth-link:focus-visible,.pf-auth-input:focus-visible,.pf-auth-phone button:focus-visible{outline:3px solid #b3a369;outline-offset:3px}
+.pf-auth-secondary{border:1px solid #d7e0e8;background:#fff;color:#003057;border-radius:11px;min-height:44px;padding:10px 15px;font:700 12px Inter,system-ui,sans-serif;cursor:pointer}
+.pf-auth-link{background:none;border:0;color:#1c557d;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:600 12px Inter,system-ui,sans-serif;padding:8px}
+.pf-auth-identity{display:flex;align-items:center;gap:12px;background:#f3f6f9;border:1px solid #e4e9ef;border-radius:13px;padding:14px;margin-bottom:24px}
+.pf-auth-identity .symbol{width:40px;height:40px;border-radius:11px;background:#e5ebf1;display:grid;place-items:center;color:#003057;font-size:22px}
+.pf-auth-identity strong{font-size:13px;color:#18384f;display:block;margin-bottom:3px}
+.pf-auth-identity small{font-size:11px;color:#6e7b88}
+.pf-auth-safe{font-size:11px!important;line-height:1.6!important;color:#778596!important;border-top:1px solid #e8edf1;padding-top:15px;margin-top:20px!important;margin-bottom:0!important}
+.pf-auth-code-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}
+.pf-auth-code-head label{font-size:12px;font-weight:800;color:#243a4b}
+.pf-auth-code-head span{font-size:11px;color:#81909e}
+.pf-auth-input{width:100%;height:58px;border:1px solid #cbd7e2;border-radius:12px;background:#fbfcfe;font:700 25px Inter,system-ui,sans-serif;letter-spacing:.35em;text-align:center;color:#153c5c;outline:none;margin-bottom:11px;padding:10px}
+.pf-auth-input:focus{border-color:#3378a7;box-shadow:0 0 0 3px #dcebf5}
+.pf-auth-input::placeholder{color:#b8c5d0}
+.pf-auth-error{color:#a6322a!important;font-size:12px!important;margin:0 0 11px!important;min-height:18px}
+.pf-auth-phone{margin:24px auto 0;max-width:236px;width:100%;border:7px solid #1d2a37;border-radius:33px;background:#f8fbfd;box-shadow:0 18px 40px #0005;padding:12px 13px 18px;color:#142e44;position:relative;transform:rotate(-2deg)}
+.pf-auth-phone:before{content:'';position:absolute;top:5px;left:50%;transform:translateX(-50%);height:5px;width:55px;border-radius:8px;background:#202a33}
+.pf-auth-phone-bar{font-size:10px;font-weight:700;color:#314759;display:flex;justify-content:space-between;padding:6px 1px 17px}
+.pf-auth-phone-logo{display:flex;gap:7px;align-items:center;font-weight:800;font-size:15px;color:#173b61;border-bottom:1px solid #dce4ed;padding-bottom:12px}
+.pf-auth-phone-logo span{width:23px;height:23px;border-radius:7px;background:#2a75b6;color:#fff;display:grid;place-items:center;font-size:14px}
+.pf-auth-phone-acct{font-size:11px;font-weight:800;margin-top:17px;color:#2c4356}
+.pf-auth-phone-sub{font-size:10px;color:#71808e;margin-top:3px}
+.pf-auth-phone-code{font-size:27px;letter-spacing:.12em;font-weight:800;color:#103b5e;margin-top:15px;white-space:nowrap}
+.pf-auth-phone-expire{height:5px;background:#e2e9ee;border-radius:8px;overflow:hidden;margin:11px 0 8px}
+.pf-auth-phone-expire i{display:block;height:100%;background:#2c7fb8;width:100%;transition:width 1s linear}
+.pf-auth-phone-time{font-size:10px;color:#6c7e8d;display:flex;justify-content:space-between;gap:5px}
+.pf-auth-phone button{margin-top:14px;width:100%;border:1px solid #d2dde7;border-radius:8px;padding:8px;background:#fff;color:#245b82;font-size:11px;font-weight:700;cursor:pointer}
+.pf-auth-phone-wrap{display:flex;flex-direction:column;align-items:center}
+.pf-auth-phone-label{font-size:11px;color:#d3e1ed;text-align:center;margin-top:15px;max-width:280px;line-height:1.6}
+.pf-auth-phone-push{margin-top:17px;border-radius:12px;background:#eaf3f9;padding:15px 10px;text-align:center}
+.pf-auth-phone-push b{display:block;font-size:12px;color:#214765;margin-bottom:6px}
+.pf-auth-phone-push p{margin:0!important;font-size:10px!important;line-height:1.5!important}
+.pf-auth-phone-approve{background:#1b7a4b!important;color:#fff!important;border-color:#1b7a4b!important}
+.pf-auth-success-icon{width:70px;height:70px;border-radius:20px;background:#e4f4e9;display:grid;place-items:center;color:#17804b;font-size:38px;margin-bottom:23px}
+.pf-auth-session{position:fixed;top:14px;right:16px;z-index:99998;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #dce3eb;box-shadow:0 5px 20px #0002;border-radius:11px;padding:7px 10px;font:600 11px Inter,system-ui,sans-serif;color:#47617a}
+.pf-auth-session button{border:0;border-radius:7px;padding:8px 11px;background:#003057;color:#fff;font-weight:700;font-size:11px;cursor:pointer}
+@media(max-width:780px){.pf-auth-grid{grid-template-columns:1fr}.pf-auth-hero{min-height:auto;padding:25px 27px}.pf-auth-hero h1{font-size:31px;max-width:none;margin-bottom:8px}.pf-auth-hero p{font-size:12px}.pf-auth-metrics{display:none}.pf-auth-panel{padding:29px 27px;min-height:auto}.pf-auth-phone{max-width:205px}.pf-auth-shell{max-width:560px}}
+@media(max-width:440px){.pf-auth{padding:15px 10px}.pf-auth-brand{font-size:20px}.pf-auth-pill{font-size:8px;padding:7px}.pf-auth-panel h2{font-size:27px}.pf-auth-hero{padding:22px}.pf-auth-panel{padding:25px 22px}.pf-auth-input{font-size:22px}}
+
+/* Standalone component: do not inherit the host site's global button or heading styles. */
+.pf-auth button{font-family:Inter,system-ui,sans-serif}
+</style>
+</head>
+<body>
+<main class="preview-app"><div><h1>Component preview complete</h1><p>This is a standalone preview of the 3-digit Duo-style access interaction. Replace this placeholder with your actual website when integrating. No real university login occurs.</p><button type="button" onclick="window.PathfinderDuoAccess.open()">Replay access flow</button></div></main>
+<section class="pf-auth" id="pfAuth" aria-label="Pathfinder sign-in walkthrough">
+ <div class="pf-auth-shell">
+  <div class="pf-auth-brand"><span class="pf-auth-mark" aria-hidden="true">P</span><span>Pathfinder</span><span class="pf-auth-pill">Interactive simulation</span></div>
+  <div class="pf-auth-grid">
+   <div class="pf-auth-hero">
+    <div><div class="pf-auth-eyebrow">Your campus. Your future.</div><h1>Find your <em>next step.</em></h1><p>Discover clubs, research, campus roles and career pathways built around your interests at Georgia Tech.</p></div>
+    <div>
+     <div id="pfPhoneWrap" class="pf-auth-phone-wrap" hidden>
+      <div class="pf-auth-phone" aria-label="Simulated phone screen">
+       <div class="pf-auth-phone-bar"><span>9:41</span><span>●●● ▰</span></div>
+       <div class="pf-auth-phone-logo"><span>✓</span>Duo Mobile</div>
+       <div class="pf-auth-phone-acct">Pathfinder sign-in request</div>
+       <div class="pf-auth-phone-sub">Simulated phone · no notification sent</div>
+       <div id="pfPhoneRequest">
+        <div class="pf-auth-phone-push"><b>Enter verification code</b><p>Type the 3-digit number shown in the browser to complete this request.</p></div>
+        <label for="pfPhoneCodeInput" style="display:block;font-size:10px;font-weight:750;margin-top:12px">Verification code</label>
+        <input id="pfPhoneCodeInput" class="pf-phone-entry" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="000" autocomplete="off" spellcheck="false" aria-describedby="pfPhoneError">
+        <div id="pfPhoneError" class="pf-phone-error" role="status" aria-live="polite"></div>
+        <button type="button" class="pf-phone-verify" id="pfPhoneVerify">Verify on simulated phone</button>
+        <button type="button" id="pfPhoneDeny">I'm not logging in</button>
+       </div>
+       <div id="pfPhoneApproved" class="pf-phone-approval" hidden>✓ Request verified</div>
+      </div>
+      <div class="pf-phone-caption">Try the phone interaction here on the page. Never use a real Duo code.</div>
+     </div>
+     <div class="pf-auth-metrics" id="pfAuthMetrics"><div class="pf-auth-metric"><b>Explore</b><small>Clubs &amp; labs</small></div><div class="pf-auth-metric"><b>Connect</b><small>Career pathways</small></div><div class="pf-auth-metric"><b>Navigate</b><small>Campus spaces</small></div></div>
+    </div>
+   </div>
+   <div class="pf-auth-panel">
+    <div class="pf-gt-header"><img class="pf-gt-logo" src="https://brand.gatech.edu/sites/default/files/inline-images/GeorgiaTech_RGB_1.png" alt="Georgia Tech logo" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="pf-gt-logo-fallback" hidden>Georgia Tech</span><span class="pf-gt-caption">Campus-inspired Pathfinder experience</span></div>
+    <div class="pf-auth-progress"><i id="pfProg1" class="on"></i><i id="pfProg2"></i><i id="pfProg3"></i></div>
+    <div id="pfStage1"><div class="pf-auth-kicker">Step 1 of 2 · Campus access</div><h2>Welcome to Pathfinder</h2><p>Continue through a campus-inspired sign-in walkthrough to explore personalized opportunities.</p><div class="pf-auth-identity"><span class="symbol">▣</span><span><strong>Georgia Tech community</strong><small>Pathfinder · student experience</small></span></div><button type="button" class="pf-auth-primary" id="pfContinue">Continue to verification →</button><p class="pf-auth-safe">Interactive simulation. This page is not Georgia Tech SSO and does not request university credentials.</p></div>
+    <div id="pfStage2" hidden><div class="pf-auth-kicker">Step 2 of 2 · Two-factor verification</div><h2>Check your Duo Mobile</h2><p>A three-digit verification number appears below. Enter that number into the <strong>simulated phone on this page</strong> to complete the walkthrough.</p><div class="pf-auth-identity"><span class="symbol">▣</span><span><strong>Pathfinder · Campus access</strong><small>Verified Push-style interaction</small></span></div>
+      <div class="pf-verified-code"><small>Your verification code</small><strong id="pfBrowserCode" aria-live="polite">000</strong><small>Enter this number on the phone preview</small><div class="pf-countdown">Expires in <b id="pfCodeTime">60s</b></div></div>
+      <p class="pf-auth-error" id="pfCodeError" aria-live="polite"></p>
+      <button type="button" class="pf-auth-secondary" id="pfRefreshCode">Send a new simulated request</button>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px"><button type="button" class="pf-auth-link" id="pfBack">← Back</button></div>
+      <p class="pf-auth-safe">This is a local-only simulation. No real Duo notification is sent, and no real authentication code should be entered.</p>
+    </div>
+    <div id="pfStage3" hidden><div class="pf-auth-success-icon" aria-hidden="true">✓</div><div class="pf-auth-kicker">Verification complete</div><h2>You're all set.</h2><p>Explore opportunities, compare pathways, and build your next chapter with Pathfinder.</p><button type="button" class="pf-auth-primary" id="pfEnter">Enter Pathfinder →</button><p class="pf-auth-safe">This verification happened only in the interactive simulation. No university authentication took place.</p></div>
+    <div style="margin-top:16px;text-align:center"><button type="button" class="pf-auth-link" id="pfSkip" hidden>Skip walkthrough and explore Pathfinder</button></div>
+   </div>
+  </div>
+ </div>
+</section>
+<div class="pf-auth-session" id="pfAuthSession" hidden><span>● Preview session · not authenticated</span><button type="button" id="pfReplay">Replay sign-in</button></div>
+<script>
+/* Local-only three-digit Verified Push-style simulation; no credentials or codes leave the browser. */
+(function(){
+ 'use strict';
+ function el(id){return document.getElementById(id)}
+ var overlay=el('pfAuth'),session=el('pfAuthSession'),code='',remaining=60,stageNum=1;
+ if(!overlay||!session)return;
+ var allowSkip=overlay.hasAttribute('data-allow-skip');
+ el('pfSkip').hidden=!allowSkip;
+ function newCode(){
+  var a=new Uint32Array(1);
+  if(window.crypto&&crypto.getRandomValues){crypto.getRandomValues(a)}else{a[0]=Math.floor(Math.random()*1000)}
+  code=String(a[0]%1000).padStart(3,'0');remaining=60;
+  el('pfBrowserCode').textContent=code;el('pfPhoneCodeInput').value='';
+  el('pfPhoneError').textContent='';el('pfCodeError').textContent='';
+  el('pfPhoneRequest').hidden=false;el('pfPhoneApproved').hidden=true;tick();
+ }
+ function tick(){el('pfCodeTime').textContent=remaining+'s'}
+ function stage(n){
+  stageNum=n;
+  [1,2,3].forEach(function(i){el('pfStage'+i).hidden=i!==n;el('pfProg'+i).classList.toggle('on',i<=n)});
+  el('pfPhoneWrap').hidden=n!==2;el('pfAuthMetrics').hidden=n===2;
+  if(n===2){newCode()}
+ }
+ function enter(){
+  overlay.hidden=true;session.hidden=false;
+  window.dispatchEvent(new CustomEvent('pathfinder-duo-complete',{detail:{simulated:true}}));
+  window.scrollTo(0,0);
+ }
+ el('pfContinue').addEventListener('click',function(){stage(2)});
+ el('pfBack').addEventListener('click',function(){stage(1)});
+ el('pfRefreshCode').addEventListener('click',newCode);
+ el('pfPhoneCodeInput').addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,3);el('pfPhoneError').textContent=''});
+ el('pfPhoneCodeInput').addEventListener('keydown',function(e){if(e.key==='Enter')el('pfPhoneVerify').click()});
+ el('pfPhoneVerify').addEventListener('click',function(){
+  var value=el('pfPhoneCodeInput').value.trim();
+  if(remaining<=0){el('pfPhoneError').textContent='Request expired. Send a new request in the browser.';return}
+  if(value!==code){el('pfPhoneError').textContent='Numbers do not match. Check the browser code.';return}
+  el('pfPhoneRequest').hidden=true;el('pfPhoneApproved').hidden=false;
+  setTimeout(function(){if(stageNum===2&&!overlay.hidden)stage(3)},600);
+ });
+ el('pfPhoneDeny').addEventListener('click',function(){el('pfCodeError').textContent='Request denied. Send a new simulated request to try again.';el('pfPhoneRequest').hidden=true;el('pfPhoneApproved').hidden=true});
+ el('pfEnter').addEventListener('click',enter);
+ el('pfSkip').addEventListener('click',function(){if(allowSkip)enter()});
+ el('pfReplay').addEventListener('click',function(){session.hidden=true;overlay.hidden=false;stage(1)});
+ window.PathfinderDuoAccess={open:function(){session.hidden=true;overlay.hidden=false;stage(1)},close:function(){overlay.hidden=true;session.hidden=false}};
+ setInterval(function(){if(stageNum===2&&!overlay.hidden&&remaining>0){remaining--;tick();if(remaining===0){el('pfCodeError').textContent='Request expired. Send a new simulated request.'}}},1000);
+ stage(1);
+})();
+</script>
+</body>
+</html>

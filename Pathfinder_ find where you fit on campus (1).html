@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pathfinder: find where you fit on campus</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#f2f4f7;--surface:#fff;--ink:#14202e;--mute:#5b6778;--line:#d9dee6;--navy:#003057;--gold:#b3a369;--goldInk:#6b5f2e;--chip:#e8ecf2;--warn:#b42318;--ok:#1b7a4b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1621;--surface:#16212f;--ink:#e8edf4;--mute:#9aa8ba;--line:#2a3849;--navy:#8fb8e8;--gold:#c9ba7e;--goldInk:#d9cc95;--chip:#1f2d3e;--warn:#ff8b7e;--ok:#6fd49b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1621;--surface:#16212f;--ink:#e8edf4;--mute:#9aa8ba;--line:#2a3849;--navy:#8fb8e8;--gold:#c9ba7e;--goldInk:#d9cc95;--chip:#1f2d3e;--warn:#ff8b7e;--ok:#6fd49b;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 16px 48px}
+h1{font-weight:800;font-size:clamp(28px,5vw,44px);line-height:1.05;margin:8px 0 6px;letter-spacing:-.02em}
+.sub{color:var(--mute);margin:0 0 20px;max-width:60ch}
+.quiz{background:var(--navy);color:#fff;border-radius:14px;padding:22px;font-size:clamp(18px,2.6vw,24px);line-height:2.1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .quiz{background:#1b3a5c;color:#fff}}
+.quiz select{font:inherit;font-weight:600;background:rgba(255,255,255,.12);color:#fff;border:0;border-bottom:2px solid var(--gold);border-radius:6px 6px 0 0;padding:0 6px}
+.quiz select option{color:#14202e}
+.quiz input[type=range]{width:130px;vertical-align:middle;accent-color:#b3a369}
+.quiz b{color:#e8d9a0;font-weight:800}
+.goals{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 0}
+.goals button{font:600 15px/1 inherit;font-family:inherit;padding:9px 14px;border-radius:99px;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;cursor:pointer}
+.goals button[aria-pressed=true]{background:var(--gold);border-color:var(--gold);color:#14202e}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #e8d9a0;outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:22px 0 12px}
+.bar .chip{font:600 14px inherit;font-family:inherit;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.bar .chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.bar select{font:600 14px inherit;font-family:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.bar .sp{flex:1}
+.cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.card h3{margin:0;font-size:19px;font-weight:600}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.pct{font-weight:800;font-size:22px;color:var(--goldInk);white-space:nowrap}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.tag{font-size:13px;font-weight:600;background:var(--chip);border-radius:6px;padding:3px 8px}
+.why{color:var(--mute);font-size:14px;margin:4px 0 10px}
+.how{font-size:14px;border-left:3px solid var(--gold);padding-left:10px;margin:8px 0 12px}
+.btn{font:600 14px inherit;font-family:inherit;padding:9px 14px;border-radius:8px;border:0;background:var(--navy);color:#fff;cursor:pointer}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#0e1621}}
+.btn.alt{background:var(--chip);color:var(--ink)}
+.plan{position:sticky;top:12px}
+.meter{height:12px;background:var(--chip);border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.meter i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.meter.over i{background:var(--warn)}
+.week{display:grid;grid-template-columns:30px repeat(5,1fr);gap:4px;margin:12px 0}
+.dh{text-align:center;font-size:12px;font-weight:600;color:var(--mute)}
+.ax{position:relative;height:294px}
+.ax span{position:absolute;right:2px;font-size:10px;color:var(--mute);transform:translateY(-50%)}
+.day{position:relative;height:294px;background:var(--chip) repeating-linear-gradient(to bottom,transparent 0 20px,var(--line) 20px 21px);border-radius:6px}
+.busy{position:absolute;left:2px;right:2px;border-radius:4px;background:repeating-linear-gradient(45deg,var(--line) 0 4px,transparent 4px 8px);border:1px solid var(--mute);color:var(--mute);font-size:10px;line-height:1.1;padding:2px;overflow:hidden}
+.conf{color:var(--warn);font-weight:600;font-size:13px;margin:4px 0 8px}
+.ok{color:var(--ok);font-weight:600;font-size:13px;margin:4px 0 8px}
+.outs{margin:8px 0 12px;font-size:14px}
+.ob{display:flex;align-items:center;gap:8px;font-size:13px;margin:3px 0}
+.ob .l{width:150px;flex:none}
+.ob .bw{flex:1;max-width:160px}
+.ob i{display:block;height:8px;border-radius:4px;background:var(--gold)}
+.ob em{font-style:normal;font-weight:600;width:36px}
+.lk{font-size:12px;font-weight:600;color:var(--navy);margin-right:6px}
+.sched{border-top:1px solid var(--line);padding-top:10px;margin-bottom:10px}
+.addb{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.addb input,.addb select{font:inherit;font-size:13px;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);min-width:0}
+.addb input{flex:1 1 110px}
+.blk{position:absolute;left:2px;right:2px;border-radius:4px;background:var(--navy);color:#fff;font-size:10px;line-height:1.1;padding:2px;overflow:hidden;opacity:.9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .blk{color:#0e1621}}
+.blk.bad{background:var(--warn)}
+.pi{display:flex;justify-content:space-between;gap:8px;align-items:center;border-top:1px solid var(--line);padding:8px 0;font-size:14px}
+.pi select{font:600 13px inherit;font-family:inherit;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);padding:3px}
+.x{background:none;border:0;color:var(--mute);cursor:pointer;font-size:18px}
+.warn{color:var(--warn);font-weight:600;font-size:14px}
+.empty{color:var(--mute);padding:14px 0}
+.note{color:var(--mute);font-size:12px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Pathfinder</h1>
+<p class="sub">Clubs, labs, jobs, and intramurals in one place, ranked for your goals and your actual week.</p>
+
+<section class="quiz" aria-label="About you">
+I’m a
+<select id="year" aria-label="Year"><option>Freshman</option><option>Sophomore</option><option>Junior</option><option selected>Senior</option></select>
+studying
+<select id="major" aria-label="Major"><option value="CS" selected>Computer Science</option><option value="ECE">Electrical &amp; Computer Eng.</option><option value="ME">Mechanical Eng.</option><option value="ISyE">Industrial Eng.</option><option value="Business">Business</option><option value="Other">something else</option></select>
+with <b id="hv">12</b> free hours a week
+<input id="hrs" type="range" min="2" max="25" value="12" aria-label="Free hours per week">
+and up to <b id="bv">$60</b> a semester
+<input id="bud" type="range" min="0" max="200" step="10" value="60" aria-label="Budget per semester">
+<div>I want to…</div>
+<div class="goals" id="goals"></div>
+</section>
+
+<div class="bar" id="bar"></div>
+
+<div class="cols">
+<div><div id="results"></div></div>
+<aside class="card plan" aria-label="My plan">
+<div class="row"><h3>My plan</h3><span id="ptot" class="tag"></span></div>
+<div class="meter" id="meter"><i></i></div>
+<div id="pmsg" class="why"></div>
+<div class="sched"><b>Your classes and busy times</b>
+<div class="why">Import an .ics export from Google, Apple, or Outlook Calendar, or add your OSCAR class times by hand. Matches are checked against these times.</div>
+<input type="file" id="ics" accept=".ics,text/calendar" aria-label="Import calendar file">
+<div class="addb"><input id="bn" placeholder="Class or event name" aria-label="Name"><select id="bd" aria-label="Day"></select><select id="bs" aria-label="Start"></select><select id="be" aria-label="End"></select><button class="btn alt" id="ba">Add</button><button class="btn alt" id="samp">Try sample classes</button></div>
+<div class="why" id="imsg"></div><div id="blist"></div></div>
+<div class="week" id="week"></div>
+<div id="plist"></div>
+</aside>
+</div>
+<p class="note">Demo with sample data. Meeting times, costs, and application details are illustrative, not official.</p>
+</div>
+
+<script>
+var GOALS={career:"build my career",research:"do research",social:"meet people",leadership:"lead something",fitness:"stay active",creative:"make things",service:"give back"};
+var TYPES={club:"Clubs",lab:"Labs",job:"Campus jobs",intramural:"Intramurals",greek:"Greek life"};
+var DAYS=["Mon","Tue","Wed","Thu","Fri"];
+var D=[
+{id:1,n:"RoboJackets",t:"club",g:["career","creative","research"],m:["CS","ECE","ME"],c:40,h:6,d:2,a:"Fill out the interest form, then interview with a project team.",dl:"Rolling",day:1,s:18,e:20},
+{id:2,n:"Hack4Impact",t:"club",g:["service","career","creative"],m:["CS","Business"],c:0,h:5,d:2,a:"Short written application plus an interview.",dl:"Early each semester",day:2,s:19,e:20},
+{id:3,n:"Women in Computing",t:"club",g:["social","career","leadership"],m:["CS","ECE"],c:0,h:2,d:1,a:"Show up to a general body meeting.",dl:"None",day:3,s:18,e:19},
+{id:4,n:"Flag Football (intramural)",t:"intramural",g:["fitness","social"],m:[],c:25,h:3,d:1,a:"Register a team on the rec center site.",dl:"Before the season starts",day:0,s:19,e:21},
+{id:5,n:"Climbing Club",t:"club",g:["fitness","social"],m:[],c:30,h:3,d:1,a:"Join the group chat and come to a meet.",dl:"None",day:4,s:17,e:19},
+{id:6,n:"Machine Learning Lab",t:"lab",g:["research","career"],m:["CS","ECE"],c:0,h:10,d:3,a:"Email the lab’s PI with your resume and a specific interest; ask about undergraduate openings.",dl:"Rolling, best a term ahead",day:3,s:14,e:16},
+{id:7,n:"Human-Computer Interaction Lab",t:"lab",g:["research","creative"],m:["CS","Other"],c:0,h:8,d:3,a:"Email the lab manager with a short portfolio or project link.",dl:"Rolling",day:1,s:15,e:17},
+{id:8,n:"Systems & Security Lab",t:"lab",g:["research","career"],m:["CS","ECE"],c:0,h:10,d:3,a:"Apply through the lab’s form; expect a technical chat.",dl:"Start of term",day:2,s:15,e:17},
+{id:9,n:"Library Front Desk",t:"job",g:["career","service"],m:[],c:0,h:8,d:1,a:"Apply on the student jobs portal.",dl:"Rolling",day:0,s:12,e:14},
+{id:10,n:"IT Help Desk",t:"job",g:["career"],m:["CS","ECE"],c:0,h:10,d:2,a:"Application plus a technical interview.",dl:"Before each term",day:1,s:13,e:15},
+{id:11,n:"Peer Tutoring Center",t:"job",g:["service","career","leadership"],m:[],c:0,h:6,d:1,a:"Apply on the student jobs portal; a strong grade in the course is required.",dl:"Rolling",day:3,s:16,e:18},
+{id:12,n:"Professional Business Fraternity",t:"greek",g:["career","social","leadership"],m:["Business","ISyE"],c:150,h:7,d:2,a:"Attend rush events, then interviews.",dl:"Start of semester",day:1,s:19,e:21},
+{id:13,n:"Student Government",t:"club",g:["leadership","service"],m:[],c:0,h:5,d:2,a:"Application and an interview.",dl:"Early fall",day:2,s:19,e:20},
+{id:14,n:"Photography Club",t:"club",g:["creative","social"],m:[],c:10,h:2,d:1,a:"Come to any meeting.",dl:"None",day:4,s:18,e:19},
+{id:15,n:"Entrepreneurship Club",t:"club",g:["career","leadership","creative"],m:[],c:0,h:4,d:1,a:"Show up to a general body meeting.",dl:"None",day:0,s:18,e:19},
+{id:16,n:"Club Soccer",t:"club",g:["fitness","social"],m:[],c:60,h:6,d:2,a:"Attend tryouts, then pay dues.",dl:"First two weeks",day:1,s:20,e:22}
+];
+var S={goals:new Set(["career","research"]),types:new Set(),easy:false,sort:"match",plan:{},free:false,noc:false,busy:[]};
+var $=function(i){return document.getElementById(i)};
+function fh(h){return (h>12?h-12:h)+(h>=12?"p":"a")}
+function cost(c){return c?"$"+c+"/sem":"Free"}
+function score(o){
+  var yr=$("year").value,mj=$("major").value,av=+$("hrs").value,sc=0,why=[];
+  var hit=o.g.filter(function(x){return S.goals.has(x)});
+  sc+=hit.length*3;
+  if(hit.length)why.push("fits your goal to "+hit.map(function(x){return GOALS[x]}).join(" and "));
+  if(o.m.indexOf(mj)>-1){sc+=2;why.push("relevant to your major")}else if(!o.m.length)sc+=1;
+  if(o.h>av){sc-=(o.h-av)*0.7;why.push("takes more time than you have free")}else why.push("fits your free hours");
+  if(yr==="Freshman"&&o.d===3){sc-=1.5;why.push("hard to land as a freshman")}
+  if(yr==="Senior"&&(o.t==="lab"||o.t==="job")&&S.goals.has("career"))sc+=1;
+  var max=3*Math.max(1,S.goals.size)+3;
+  return {o:o,pct:Math.max(0,Math.min(99,Math.round(sc/max*100))),why:why.join("; ")};
+}
+function conflicts(){
+  var ids=Object.keys(S.plan),bad={};
+  for(var i=0;i<ids.length;i++)for(var j=i+1;j<ids.length;j++){
+    var a=S.plan[ids[i]].o,b=S.plan[ids[j]].o;
+    if(a.day===b.day&&a.s<b.e&&b.s<a.e){bad[a.id]=1;bad[b.id]=1}
+  }
+  ids.forEach(function(i){var a=S.plan[i].o;S.busy.forEach(function(b){if(a.day===b.day&&a.s<b.e&&b.s<a.e)bad[a.id]=1})});
+  return bad;
+}
+var OUT={1:{n:41,r:[["Software engineering",53],["Hardware & robotics",20],["Grad school",17],["Other",10]]},2:{n:28,r:[["Software engineering",61],["Product & consulting",18],["Nonprofit & public",11],["Other",10]]},3:{n:33,r:[["Software engineering",55],["Product management",20],["Consulting",15],["Other",10]]},6:{n:19,r:[["Grad school",47],["Software engineering",37],["Quant & data",10],["Other",6]]},10:{n:22,r:[["Software engineering",58],["IT & cybersecurity",25],["Other",17]]},15:{n:30,r:[["Software engineering",35],["Startups & founders",25],["Consulting",20],["Quant & finance",10],["Other",10]]}};
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function fm(h){var a=Math.floor(h),m=Math.round((h-a)*60);return ((a%12)||12)+(m?":"+("0"+m).slice(-2):"")+(a>=12?"p":"a")}
+function clash(o){var r=null;S.busy.forEach(function(b){if(!r&&b.day===o.day&&o.s<b.e&&b.s<o.e)r=b.n});Object.keys(S.plan).forEach(function(i){var p=S.plan[i].o;if(!r&&p.id!==o.id&&p.day===o.day&&o.s<p.e&&p.s<o.e)r=p.n});return r}
+function confLine(o){var c=clash(o);return c?'<div class="conf">Conflicts with '+esc(c)+'</div>':(S.busy.length?'<div class="ok">No conflicts with your schedule</div>':"")}
+function outLine(o){var d=OUT[o.id];if(!d)return '<div class="why">No alumni outcome data yet.</div>';return '<div class="outs"><b>Where alumni work now</b> <span class="why">(sample data, n='+d.n+')</span>'+d.r.map(function(x){return '<div class="ob"><span class="l">'+esc(x[0])+'</span><span class="bw"><i style="width:'+x[1]+'%"></i></span><em>'+x[1]+'%</em></div>'}).join("")+'</div>'}
+function cal(o){var d=new Date();d.setDate(d.getDate()+((o.day+1-d.getDay()+7)%7));var p=function(n){return ("0"+n).slice(-2)},hm=function(h){return p(Math.floor(h))+p(Math.round((h%1)*60))+"00"},tt=function(h){return p(Math.floor(h))+":"+p(Math.round((h%1)*60))+":00"},ymd=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate()),iso=d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());
+ var g="https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(o.n)+"&dates="+ymd+"T"+hm(o.s)+"/"+ymd+"T"+hm(o.e)+"&recur="+encodeURIComponent("RRULE:FREQ=WEEKLY")+"&details="+encodeURIComponent(o.a);
+ var ol="https://outlook.live.com/calendar/0/deeplink/compose?rrv=addevent&subject="+encodeURIComponent(o.n)+"&startdt="+iso+"T"+tt(o.s)+"&enddt="+iso+"T"+tt(o.e);
+ return 'Add to <a class="lk" target="_blank" rel="noopener" href="'+esc(g)+'">Google</a><a class="lk" target="_blank" rel="noopener" href="'+esc(ol)+'">Outlook</a>'}
+function parseICS(t){t=t.replace(/\r?\n[ \t]/g,"");var ev=t.split("BEGIN:VEVENT").slice(1),out=[],now=new Date(),lim=new Date(now.getTime()+14*864e5),map={MO:0,TU:1,WE:2,TH:3,FR:4},rx=/^(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)/;
+ ev.forEach(function(b){var g=function(k){var m=b.match(new RegExp("^"+k+"[^:\\r\\n]*:(.*)$","m"));return m?m[1].trim():""};
+  var s=g("DTSTART"),e=g("DTEND"),n=g("SUMMARY")||"Busy",r=g("RRULE"),m1=s.match(rx),m2=e.match(rx);if(!m1||!m2)return;
+  var z=/Z$/.test(s),mk=function(m){return z?new Date(Date.UTC(+m[1],m[2]-1,+m[3],+m[4],+m[5])):new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5])},d1=mk(m1),d2=mk(m2),st=d1.getHours()+d1.getMinutes()/60,en=d2.getHours()+d2.getMinutes()/60;if(en<=st)return;
+  var u=r.match(/UNTIL=(\d{4})(\d\d)(\d\d)/);if(u&&new Date(+u[1],u[2]-1,+u[3])<now)return;
+  var days=[],bd=r.match(/BYDAY=([A-Z,]+)/);
+  if(/FREQ=WEEKLY/.test(r)){(bd?bd[1].split(","):[["SU","MO","TU","WE","TH","FR","SA"][d1.getDay()]]).forEach(function(c){if(map[c]!==undefined)days.push(map[c])})}
+  else if(d1>=now&&d1<=lim){var wd=(d1.getDay()+6)%7;if(wd<5)days.push(wd)}
+  days.forEach(function(dy){out.push({n:n,day:dy,s:st,e:en})})});return out}
+function renderBusy(){$("blist").innerHTML=S.busy.map(function(b,i){return '<div class="pi"><span>'+esc(b.n)+', '+DAYS[b.day]+' '+fm(b.s)+'–'+fm(b.e)+'</span><button class="x" data-b="'+i+'" aria-label="Remove">×</button></div>'}).join("")}
+function renderBar(){
+  var h="";
+  Object.keys(TYPES).forEach(function(k){h+='<button class="chip" data-t="'+k+'" aria-pressed="'+S.types.has(k)+'">'+TYPES[k]+'</button>'});
+  h+='<button class="chip" id="easy" aria-pressed="'+S.easy+'">Easy to join</button><button class="chip" id="free" aria-pressed="'+S.free+'">No fee</button><button class="chip" id="noc" aria-pressed="'+S.noc+'">No schedule conflicts</button><span class="sp"></span>';
+  h+='<label>Sort <select id="sort"><option value="match">Best match</option><option value="cost">Lowest cost</option><option value="time">Least time</option><option value="easy">Easiest to join</option></select></label>';
+  $("bar").innerHTML=h;$("sort").value=S.sort;
+}
+function renderResults(){
+  var bud=+$("bud").value;
+  if(!S.goals.size){$("results").innerHTML='<div class="card empty">Pick at least one goal above to see matches.</div>';return}
+  var list=D.filter(function(o){return o.c<=bud&&(!S.types.size||S.types.has(o.t))&&(!S.easy||o.d===1)&&(!S.free||!o.c)&&(!S.noc||!clash(o))}).map(score);
+  var k=S.sort;
+  list.sort(function(a,b){return k==="cost"?a.o.c-b.o.c||b.pct-a.pct:k==="time"?a.o.h-b.o.h||b.pct-a.pct:k==="easy"?a.o.d-b.o.d||b.pct-a.pct:b.pct-a.pct});
+  list=list.filter(function(x){return x.pct>0}).slice(0,k==="match"?8:12);
+  if(!list.length){$("results").innerHTML='<div class="card empty">Nothing matches. Try a higher budget or fewer filters.</div>';return}
+  $("results").innerHTML=list.map(function(x){var o=x.o,inn=!!S.plan[o.id];
+    return '<div class="card"><div class="row"><h3>'+o.n+'</h3><span class="pct">'+x.pct+'%</span></div>'+
+    '<div class="meta"><span class="tag">'+TYPES[o.t].replace(/s$/,"")+'</span><span class="tag">'+cost(o.c)+'</span><span class="tag">~'+o.h+' hrs/week</span><span class="tag">Joining: '+["","easy","moderate","competitive"][o.d]+'</span><span class="tag">'+DAYS[o.day]+" "+fh(o.s)+"–"+fh(o.e)+'</span></div>'+
+    '<div class="why">'+x.why.charAt(0).toUpperCase()+x.why.slice(1)+'.</div>'+confLine(o)+outLine(o)+
+    '<div class="how"><b>How to apply:</b> '+o.a+'<br><b>Deadline:</b> '+o.dl+'</div>'+
+    '<button class="btn'+(inn?' alt':'')+'" data-p="'+o.id+'">'+(inn?'Remove from plan':'Add to plan')+'</button></div>'}).join("");
+}
+function renderPlan(){
+  var ids=Object.keys(S.plan),av=+$("hrs").value,tot=0,bad=conflicts();
+  ids.forEach(function(i){tot+=S.plan[i].o.h});
+  $("ptot").textContent=tot+" / "+av+" hrs";
+  var m=$("meter");m.className="meter"+(tot>av?" over":"");m.firstElementChild.style.width=Math.min(100,av?tot/av*100:0)+"%";
+  var nb=Object.keys(bad).length;
+  $("pmsg").innerHTML=!ids.length?"Add opportunities to see how they fit in your week.":(tot>av?'<span class="warn">Over budget by '+(tot-av)+' hrs a week. Remove something or free up time.</span>':"You have "+(av-tot)+" hrs a week to spare.")+(nb?'<br><span class="warn">Time conflict: overlapping meetings are shown in red.</span>':"");
+  var w='<div></div>'+DAYS.map(function(x){return '<div class="dh">'+x+'</div>'}).join("")+'<div class="ax">';for(var h=8;h<=22;h+=2)w+='<span style="top:'+(h-8)*21+'px">'+fm(h)+'</span>';w+='</div>';
+  for(var d=0;d<5;d++){w+='<div class="day">';S.busy.forEach(function(b){var s=Math.max(8,b.s),e=Math.min(22,b.e);if(b.day===d&&e>s)w+='<div class="busy" style="top:'+((s-8)/14*100)+'%;height:'+((e-s)/14*100)+'%" title="'+esc(b.n)+'">'+esc(b.n)+'</div>'});
+    ids.forEach(function(i){var o=S.plan[i].o;if(o.day===d)w+='<div class="blk'+(bad[o.id]?" bad":"")+'" style="top:'+((o.s-8)/14*100)+'%;height:'+((o.e-o.s)/14*100)+'%" title="'+o.n+'">'+o.n+'</div>'});
+    w+='</div>'}
+  $("week").innerHTML=w;
+  $("plist").innerHTML=ids.map(function(i){var p=S.plan[i];return '<div class="pi"><span>'+p.o.n+'<br>'+cal(p.o)+'</span><span><select data-s="'+i+'" aria-label="Status for '+p.o.n+'">'+["Interested","Applied","Interviewing","Joined"].map(function(s){return '<option'+(p.st===s?' selected':'')+'>'+s+'</option>'}).join("")+'</select> <button class="x" data-r="'+i+'" aria-label="Remove">×</button></span></div>'}).join("");
+}
+function all(){renderResults();renderPlan();renderBusy()}
+(function init(){
+  $("goals").innerHTML=Object.keys(GOALS).map(function(k){return '<button data-g="'+k+'" aria-pressed="'+S.goals.has(k)+'">'+GOALS[k]+'</button>'}).join("");
+  renderBar();all();
+  $("goals").onclick=function(e){var k=e.target.getAttribute("data-g");if(!k)return;S.goals.has(k)?S.goals.delete(k):S.goals.add(k);e.target.setAttribute("aria-pressed",S.goals.has(k));all()};
+  $("bar").onclick=function(e){var t=e.target.getAttribute("data-t");if(t){S.types.has(t)?S.types.delete(t):S.types.add(t);renderBar();renderResults()}else if(e.target.id==="easy"){S.easy=!S.easy;renderBar();renderResults()}else if(e.target.id==="free"){S.free=!S.free;renderBar();renderResults()}else if(e.target.id==="noc"){S.noc=!S.noc;renderBar();renderResults()}};
+  $("bar").onchange=function(e){if(e.target.id==="sort"){S.sort=e.target.value;renderResults()}};
+  $("results").onclick=function(e){var p=e.target.getAttribute("data-p");if(!p)return;if(S.plan[p])delete S.plan[p];else S.plan[p]={o:D.filter(function(o){return o.id==p})[0],st:"Interested"};all()};
+  $("plist").onclick=function(e){var r=e.target.getAttribute("data-r");if(r){delete S.plan[r];all()}};
+  $("plist").onchange=function(e){var s=e.target.getAttribute("data-s");if(s)S.plan[s].st=e.target.value};
+  $("year").onchange=$("major").onchange=all;
+  $("bd").innerHTML=DAYS.map(function(d,i){return '<option value="'+i+'">'+d+'</option>'}).join("");
+  var ho="";for(var h=8;h<=22;h++)ho+='<option value="'+h+'">'+fm(h)+'</option>';$("bs").innerHTML=ho;$("be").innerHTML=ho;$("bs").value=10;$("be").value=11;
+  $("ba").onclick=function(){var s=+$("bs").value,e=+$("be").value;if(e<=s){$("imsg").textContent="End time must be after the start time.";return}S.busy.push({n:$("bn").value||"Busy",day:+$("bd").value,s:s,e:e});$("bn").value="";$("imsg").textContent="";all()};
+  $("samp").onclick=function(){[["MATH 1554",3,14,15.25],["CS 2340",1,18,19.25],["PHYS 2211",0,12,13.25],["CS 1332",0,10,11.25]].forEach(function(c){S.busy.push({n:c[0],day:c[1],s:c[2],e:c[3]})});all()};
+  $("blist").onclick=function(e){var b=e.target.getAttribute("data-b");if(b!==null){S.busy.splice(+b,1);all()}};
+  $("ics").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var evs=parseICS(String(r.result)),seen={};S.busy.forEach(function(b){seen[b.n+b.day+b.s]=1});evs.forEach(function(b){var k=b.n+b.day+b.s;if(!seen[k]){seen[k]=1;S.busy.push(b)}});$("imsg").textContent="Imported "+evs.length+" weekly blocks."}catch(x){$("imsg").textContent="Couldn’t read that file. Export it as .ics and try again."}all()};r.readAsText(f)};
+  $("hrs").oninput=function(){$("hv").textContent=this.value;all()};
+  $("bud").oninput=function(){$("bv").textContent="$"+this.value;all()};
+})();
+</script>
+</body>
+</html>
